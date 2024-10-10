@@ -19,8 +19,6 @@ export const load: PageServerLoad = async ({ params }) => {
 		// Fetch rows for the knowledge base using the kbname
 		const rows = await db.collection('rows').find({ knowledgeBase: kbname }).toArray();
 
-		console.log(`Found ${rows.length} rows for knowledge base ${kbname}`);
-
 		// Serialize the knowledgeBase and rows
 		const serializedKnowledgeBase = JSON.parse(JSON.stringify(knowledgeBase));
 		const serializedRows = JSON.parse(JSON.stringify(rows));
