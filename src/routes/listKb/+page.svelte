@@ -19,9 +19,13 @@
 		{:else}
 			<ul class="space-y-4">
 				{#each data.knowledgeBases as kb}
-					<li class="bg-gray-800 shadow rounded-lg p-6 border border-gray-700">
-						<h2 class="text-2xl font-semibold text-blue-300 mb-2">{kb.name}</h2>
-						<p class="text-gray-300">{kb.description}</p>
+					<li
+						class="bg-gray-800 shadow rounded-lg border border-gray-700 hover:bg-gray-750 transition-colors duration-200"
+					>
+						<a href="/listKb/{kb.name}" class="block p-6">
+							<h2 class="text-2xl font-semibold text-blue-300 mb-2">{kb.name}</h2>
+							<p class="text-gray-300">{kb.description}</p>
+						</a>
 					</li>
 				{/each}
 			</ul>
