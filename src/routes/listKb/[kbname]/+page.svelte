@@ -16,7 +16,7 @@
 		<h2 class="text-2xl font-semibold mb-4 text-blue-300">Fields</h2>
 
 		{#if data.knowledgeBase.fields && data.knowledgeBase.fields.length > 0}
-			<div class="overflow-x-auto">
+			<div class="overflow-x-auto mb-8">
 				<table class="w-full bg-gray-800 rounded-lg overflow-hidden">
 					<thead>
 						<tr class="bg-gray-700">
@@ -43,9 +43,41 @@
 				</table>
 			</div>
 		{:else}
-			<p class="text-gray-300 bg-gray-800 p-4 rounded-md">
+			<p class="text-gray-300 bg-gray-800 p-4 rounded-md mb-8">
 				No fields found for this knowledge base.
 			</p>
+		{/if}
+
+		<h2 class="text-2xl font-semibold mb-4 text-blue-300">Rows</h2>
+
+		{#if data.rows && data.rows.length > 0}
+			<div class="overflow-x-auto">
+				<table class="w-full bg-gray-800 rounded-lg overflow-hidden">
+					<thead>
+						<tr class="bg-gray-700">
+							{#each data.knowledgeBase.fields as field}
+								<th
+									class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"
+									>{field.name}</th
+								>
+							{/each}
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-700">
+						{#each data.rows as row}
+							<tr>
+								{#each data.knowledgeBase.fields as field}
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"
+										>{row[field.name]}</td
+									>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{:else}
+			<p class="text-gray-300 bg-gray-800 p-4 rounded-md">No rows found for this knowledge base.</p>
 		{/if}
 	</div>
 </div>

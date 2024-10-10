@@ -16,14 +16,18 @@ export const load: PageServerLoad = async ({ params }) => {
 			};
 		}
 
-		// Convert ObjectId to string
-		const serializedKnowledgeBase = {
-			...knowledgeBase,
-			_id: knowledgeBase._id.toString()
-		};
+		// Fetch rows for the knowledge base using the kbname
+		const rows = await db.collection('rows').find({ knowledgeBase: kbname }).toArray();
+
+		console.log(`Found ${rows.length} rows for knowledge base ${kbname}`);
+
+		// Serialize the knowledgeBase and rows
+		const serializedKnowledgeBase = JSON.parse(JSON.stringify(knowledgeBase));
+		const serializedRows = JSON.parse(JSON.stringify(rows));
 
 		return {
-			knowledgeBase: serializedKnowledgeBase
+			knowledgeBase: serializedKnowledgeBase,
+			rows: serializedRows
 		};
 	} catch (error) {
 		console.error('Error fetching knowledge base:', error);

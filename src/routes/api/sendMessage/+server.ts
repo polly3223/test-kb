@@ -91,12 +91,30 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		const assistantResponse = completion.choices[0].message;
-		let assistantMessage = assistantResponse.content || "Sorry, I couldn't generate a response.";
+		let assistantMessage = assistantResponse.content || '';
 		let functionCalled = null;
 
 		if (assistantResponse.tool_calls && assistantResponse.tool_calls.length > 0) {
-			functionCalled = assistantResponse.tool_calls[0].function.name;
-			assistantMessage += `\n\nFunction called: ${functionCalled}`;
+			const toolCall = assistantResponse.tool_calls[0];
+			functionCalled = toolCall.function.name;
+			assistantMessage += assistantMessage ? '\n\n' : '';
+			assistantMessage += `Function called: ${functionCalled}`;
+
+			// Handle insertRow function calls
+			if (functionCalled.startsWith('insertRow')) {
+				const kbName = functionCalled.replace('insertRow', '');
+				const rowData = JSON.parse(toolCall.function.arguments);
+
+				// Insert the row into the 'rows' collection
+				const rowsCollection = db.collection('rows');
+				await rowsCollection.insertOne({
+					knowledgeBase: kbName,
+					...rowData,
+					timestamp: new Date()
+				});
+
+				assistantMessage += `\nRow inserted into ${kbName} knowledge base.`;
+			}
 		}
 
 		// Insert the assistant's response as a trace
