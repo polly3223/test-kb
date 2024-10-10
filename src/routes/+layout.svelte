@@ -8,6 +8,7 @@
 		<ul class="flex space-x-4">
 			<li><a href="/createKb" class="hover:text-gray-300">Create KB</a></li>
 			<li><a href="/listKb" class="hover:text-gray-300">List KB</a></li>
+			<li><a href="/chat" class="hover:text-gray-300">Chat</a></li>
 		</ul>
 	</nav>
 </header>
