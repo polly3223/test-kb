@@ -1,18 +1,38 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { PageData } from './$types';
 
-	let messages = [];
+	export let data: PageData;
+
+	let messages = data.messages;
 	let inputMessage = '';
 	let chatContainer;
 
-	function sendMessage() {
+	async function sendMessage() {
 		if (inputMessage.trim()) {
 			messages = [...messages, { text: inputMessage, isUser: true }];
+			const userMessage = inputMessage;
 			inputMessage = '';
-			// TODO: Add API call to get bot response
-			setTimeout(() => {
-				messages = [...messages, { text: 'This is a sample bot response.', isUser: false }];
-			}, 1000);
+
+			try {
+				const response = await fetch('/api/sendMessage', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ message: userMessage })
+				});
+
+				if (!response.ok) {
+					throw new Error('Failed to send message');
+				}
+
+				const data = await response.json();
+				messages = [...messages, { text: data.assistantMessage, isUser: false }];
+			} catch (error) {
+				console.error('Error sending message:', error);
+				messages = [...messages, { text: 'Error: Failed to send message', isUser: false }];
+			}
 		}
 	}
 
