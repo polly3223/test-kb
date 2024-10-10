@@ -18,17 +18,46 @@
 		fields: [{ name: '', description: '' }]
 	});
 
+	// Create a proper Svelte store for submissionStatus
+	let submissionStatus: Writable<string> = writable('Ready to submit');
+
 	function addField() {
-		$knowledgeBase.fields = [...$knowledgeBase.fields, { name: '', description: '' }];
+		knowledgeBase.update((kb) => {
+			kb.fields = [...kb.fields, { name: '', description: '' }];
+			return kb;
+		});
 	}
 
-	function removeField(index) {
-		$knowledgeBase.fields = $knowledgeBase.fields.filter((_, i) => i !== index);
-	}
+	async function handleSubmit() {
+		try {
+			$submissionStatus = 'Submitting...';
+			const response = await fetch('/api/createKnowledgeBase', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify($knowledgeBase)
+			});
 
-	function handleSubmit() {
-		console.log('Submitted KnowledgeBase:', $knowledgeBase);
-		// Here you would typically send the data to your backend
+			if (!response.ok) {
+				throw new Error('Failed to create knowledge base');
+				$submissionStatus = 'Error creating knowledge base. Please try again.';
+			}
+
+			const result = await response.json();
+			console.log('Knowledge Base created:', result);
+			$submissionStatus = 'Knowledge Base created successfully!';
+
+			// Reset the form
+			$knowledgeBase = {
+				name: '',
+				description: '',
+				fields: [{ name: '', description: '' }]
+			};
+		} catch (error) {
+			console.error('Error creating knowledge base:', error);
+			$submissionStatus = 'Error creating knowledge base. Please try again.';
+		}
 	}
 
 	// Add a function to handle field updates
@@ -117,6 +146,14 @@
 			>
 				Create Knowledge Base
 			</button>
+
+			{#if $submissionStatus}
+				<div
+					class={`mt-4 p-4 rounded-md ${$submissionStatus.includes('Error') ? 'bg-red-600' : 'bg-green-600'}`}
+				>
+					{$submissionStatus}
+				</div>
+			{/if}
 		</form>
 	</div>
 </div>
