@@ -1,6 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import clientPromise from '$lib/server/mongo';
+import { SECRET_OPENAI_API_KEY } from '$env/static/private';
+import OpenAI from 'openai';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -9,18 +11,35 @@ export const POST: RequestHandler = async ({ request }) => {
 		const db = client.db('ksTest');
 		const collection = db.collection('traces');
 
-		const trace = {
+		// Insert the user's message as a trace
+		await collection.insertOne({
 			timestamp: new Date(),
 			message: message,
 			isUser: true
-		};
+		});
 
-		await collection.insertOne(trace);
+		// Fetch all previous traces
+		const traces = await collection.find({}).sort({ timestamp: 1 }).toArray();
 
-		// Simulate a delay for the assistant's response
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		// Prepare messages for OpenAI API
+		const messages = traces.map((trace) => ({
+			role: trace.isUser ? 'user' : 'assistant',
+			content: trace.message
+		}));
 
-		const assistantMessage = 'This is a sample bot response.';
+		// Initialize OpenAI API
+		const openai = new OpenAI({
+			apiKey: SECRET_OPENAI_API_KEY
+		});
+
+		// Call OpenAI API
+		const completion = await openai.chat.completions.create({
+			model: 'gpt-3.5-turbo',
+			messages: messages
+		});
+
+		const assistantMessage =
+			completion.choices[0].message.content || "Sorry, I couldn't generate a response.";
 
 		// Insert the assistant's response as a trace
 		await collection.insertOne({
