@@ -28,6 +28,14 @@
 		});
 	}
 
+	// Add this new function
+	function removeField(index: number) {
+		knowledgeBase.update((kb) => {
+			kb.fields = kb.fields.filter((_, i) => i !== index);
+			return kb;
+		});
+	}
+
 	async function handleSubmit() {
 		try {
 			$submissionStatus = 'Submitting...';
