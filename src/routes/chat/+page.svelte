@@ -52,7 +52,10 @@
 <div class="max-w-3xl mx-auto">
 	<h1 class="text-4xl font-bold mb-8 text-blue-400">Chat</h1>
 
-	<div bind:this={chatContainer} class="bg-gray-800 rounded-lg p-4 h-[60vh] overflow-y-auto mb-4">
+	<div
+		bind:this={chatContainer}
+		class="bg-gray-800 rounded-lg p-4 h-[60vh] overflow-y-auto mb-4 custom-scrollbar"
+	>
 		{#each messages as message}
 			<div class="mb-4 {message.isUser ? 'text-right' : 'text-left'}">
 				<div
@@ -82,3 +85,29 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	.custom-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: #4a5568 #2d3748;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: #2d3748;
+		border-radius: 10px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background-color: #4a5568;
+		border-radius: 10px;
+		border: 3px solid #2d3748;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background-color: #718096;
+	}
+</style>
