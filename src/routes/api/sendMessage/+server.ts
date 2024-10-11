@@ -84,7 +84,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Call OpenAI API with tools
 		const completion = await openai.chat.completions.create({
-			model: 'gpt-4o',
+			model: 'gpt-4o-mini',
 			messages: messages,
 			tools: tools,
 			tool_choice: 'auto'
