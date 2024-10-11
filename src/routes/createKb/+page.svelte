@@ -5,6 +5,7 @@
 	interface Field {
 		name: string;
 		description: string;
+		required: boolean;
 	}
 
 	interface KnowledgeBase {
@@ -16,7 +17,7 @@
 	let knowledgeBase: Writable<KnowledgeBase> = writable({
 		name: '',
 		description: '',
-		fields: [{ name: '', description: '' }]
+		fields: [{ name: '', description: '', required: false }]
 	});
 
 	// Update the submissionStatus store
@@ -72,7 +73,7 @@
 			$knowledgeBase = {
 				name: '',
 				description: '',
-				fields: [{ name: '', description: '' }]
+				fields: [{ name: '', description: '', required: false }]
 			};
 		} catch (error) {
 			console.error('Error creating knowledge base:', error);
@@ -81,14 +82,21 @@
 	}
 
 	// Add a function to handle field updates
-	function updateField(index: number, key: 'name' | 'description', value: string) {
+	function updateField(
+		index: number,
+		key: 'name' | 'description' | 'required',
+		value: string | boolean
+	) {
 		$knowledgeBase.fields[index][key] = value;
 		$knowledgeBase = $knowledgeBase;
 	}
 
 	// Add the addField function
 	function addField() {
-		$knowledgeBase.fields = [...$knowledgeBase.fields, { name: '', description: '' }];
+		$knowledgeBase.fields = [
+			...$knowledgeBase.fields,
+			{ name: '', description: '', required: false }
+		];
 	}
 
 	// Add the removeField function
@@ -132,13 +140,10 @@
 							id={`field-name-${index}`}
 							value={field.name}
 							on:input={(e) => updateField(index, 'name', e.target.value)}
-							placeholder={index === 0 ? 'Field name *' : 'Field name'}
-							required={index === 0}
+							placeholder="Field name"
 							class="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
 						/>
-						<label for={`field-name-${index}`} class="sr-only"
-							>{index === 0 ? 'Field name (required)' : 'Field name'}</label
-						>
+						<label for={`field-name-${index}`} class="sr-only">Field name</label>
 					</div>
 					<div class="flex-1">
 						<input
@@ -150,6 +155,16 @@
 							class="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
 						/>
 						<label for={`field-description-${index}`} class="sr-only">Field description</label>
+					</div>
+					<div class="flex items-center">
+						<input
+							type="checkbox"
+							id={`field-required-${index}`}
+							checked={field.required}
+							on:change={(e) => updateField(index, 'required', e.target.checked)}
+							class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+						/>
+						<label for={`field-required-${index}`} class="text-sm text-blue-300">Required</label>
 					</div>
 					{#if index > 0}
 						<button

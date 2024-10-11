@@ -7,7 +7,7 @@ import type { MongoClient, Db, Collection } from 'mongodb';
 
 interface KnowledgeBase {
 	name: string;
-	fields: { name: string; description: string }[];
+	fields: { name: string; description: string; required: boolean }[];
 }
 
 interface Trace {
@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const kbCollection: Collection<KnowledgeBase> = db.collection('knowledgeBases');
 		const knowledgeBases: KnowledgeBase[] = await kbCollection.find({}).toArray();
 
-		// Create tools for each knowledge base
+		// Update the tools creation logic
 		const tools = knowledgeBases.flatMap((kb: KnowledgeBase) => {
 			// Create a properties object for the insertRow function
 			const insertProperties: { [key: string]: { type: string; description: string } } =
@@ -48,6 +48,9 @@ export const POST: RequestHandler = async ({ request }) => {
 					{} as { [key: string]: { type: string; description: string } }
 				);
 
+			// Create a list of required fields
+			const requiredFields = kb.fields.filter((field) => field.required).map((field) => field.name);
+
 			return [
 				{
 					type: 'function',
@@ -57,7 +60,7 @@ export const POST: RequestHandler = async ({ request }) => {
 						parameters: {
 							type: 'object',
 							properties: insertProperties,
-							required: kb.fields.map((field) => field.name)
+							required: requiredFields
 						}
 					}
 				},
@@ -70,6 +73,8 @@ export const POST: RequestHandler = async ({ request }) => {
 				}
 			];
 		});
+
+		console.log(JSON.stringify(tools, null, 2));
 
 		// Add a check for empty tools array
 		if (tools.length === 0) {
