@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 
 	const navItems = [
+		{ href: '/', label: 'Home' },
 		{ href: '/createKb', label: 'Create KB' },
 		{ href: '/listKb', label: 'List KB' },
 		{ href: '/chat', label: 'Chat' }
