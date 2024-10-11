@@ -3,6 +3,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import markdownit from 'markdown-it';
 
 	export let data: PageData;
 
@@ -11,6 +12,7 @@
 	let chatContainer;
 	let chats = data.chats;
 	let currentChatId = $page.params.chatId;
+	let md = markdownit();
 
 	$: currentChatId = $page.params.chatId;
 
@@ -109,7 +111,9 @@
 							? 'bg-blue-600 text-white'
 							: 'bg-gray-700 text-gray-200'}"
 					>
-						{message.text}
+						<div class="prose dark:prose-invert prose-sm">
+							{@html md.render(message.text)}
+						</div>
 					</div>
 				</div>
 			{/each}
