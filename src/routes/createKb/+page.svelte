@@ -18,25 +18,21 @@
 		fields: [{ name: '', description: '' }]
 	});
 
-	// Create a proper Svelte store for submissionStatus
-	let submissionStatus: Writable<string> = writable('Ready to submit');
+	// Update the submissionStatus store
+	let submissionStatus: Writable<string> = writable('');
 
-	function addField() {
-		knowledgeBase.update((kb) => {
-			kb.fields = [...kb.fields, { name: '', description: '' }];
-			return kb;
-		});
-	}
+	// Add this derived store to check if the form is ready to submit
+	$: isReadyToSubmit =
+		$knowledgeBase.name.trim() !== '' &&
+		$knowledgeBase.fields.some((field) => field.name.trim() !== '');
 
-	// Add this new function
-	function removeField(index: number) {
-		knowledgeBase.update((kb) => {
-			kb.fields = kb.fields.filter((_, i) => i !== index);
-			return kb;
-		});
-	}
-
+	// Update the handleSubmit function
 	async function handleSubmit() {
+		if (!isReadyToSubmit) {
+			$submissionStatus = 'Please fill in the required fields.';
+			return;
+		}
+
 		try {
 			$submissionStatus = 'Submitting...';
 			const response = await fetch('/api/createKnowledgeBase', {
@@ -72,6 +68,16 @@
 	function updateField(index: number, key: 'name' | 'description', value: string) {
 		$knowledgeBase.fields[index][key] = value;
 		$knowledgeBase = $knowledgeBase;
+	}
+
+	// Add the addField function
+	function addField() {
+		$knowledgeBase.fields = [...$knowledgeBase.fields, { name: '', description: '' }];
+	}
+
+	// Add the removeField function
+	function removeField(index: number) {
+		$knowledgeBase.fields = $knowledgeBase.fields.filter((_, i) => i !== index);
 	}
 </script>
 
@@ -151,7 +157,9 @@
 
 		<button
 			type="submit"
-			class="w-full px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 text-lg font-semibold"
+			class={`w-full px-6 py-3 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 text-lg font-semibold
+				${isReadyToSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+			disabled={!isReadyToSubmit}
 		>
 			Create Knowledge Base
 		</button>
