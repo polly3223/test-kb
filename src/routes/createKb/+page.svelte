@@ -36,6 +36,18 @@
 
 		try {
 			$submissionStatus = 'Submitting...';
+
+			// Set description to name if empty for knowledge base
+			if (!$knowledgeBase.description.trim()) {
+				$knowledgeBase.description = $knowledgeBase.name;
+			}
+
+			// Set description to name if empty for fields
+			$knowledgeBase.fields = $knowledgeBase.fields.map((field) => ({
+				...field,
+				description: field.description.trim() || field.name
+			}));
+
 			const submissionData = {
 				...$knowledgeBase,
 				name: changeCase.pascalCase($knowledgeBase.name)
@@ -51,7 +63,6 @@
 
 			if (!response.ok) {
 				throw new Error('Failed to create knowledge base');
-				$submissionStatus = 'Error creating knowledge base. Please try again.';
 			}
 
 			const result = await response.json();

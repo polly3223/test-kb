@@ -65,19 +65,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					type: 'function',
 					function: {
 						name: `getRows${kb.name}`,
-						description: `Get rows from the ${kb.name} knowledge base`,
-						parameters: {
-							type: 'object',
-							properties: {
-								filter: {
-									type: 'object',
-									description: 'Filter criteria for the rows',
-									properties: insertProperties,
-									additionalProperties: true
-								}
-							},
-							required: ['filter']
-						}
+						description: `Get rows from the ${kb.name} knowledge base`
 					}
 				}
 			];
@@ -114,21 +102,23 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 
 		// Call OpenAI API with tools only if they exist
+		let assistantMessage: string = '';
+		let functionCalled: string | null = null;
+		let shouldMakeSecondCall = false;
+		let functionResult: any = null;
+
+		// First AI call
 		const completion = await openai.chat.completions.create({
-			model: 'gpt-4-0613',
+			model: 'gpt-4o-mini',
 			messages: messages,
 			...(tools.length > 0 ? { tools, tool_choice: 'auto' } : {})
 		});
 
 		const assistantResponse = completion.choices[0].message;
-		let assistantMessage: string = assistantResponse.content || '';
-		let functionCalled: string | null = null;
 
 		if (assistantResponse.tool_calls && assistantResponse.tool_calls.length > 0) {
 			const toolCall = assistantResponse.tool_calls[0];
 			functionCalled = toolCall.function.name;
-			assistantMessage += assistantMessage ? '\n\n' : '';
-			assistantMessage += `Function called: ${functionCalled}`;
 
 			// Handle insertRow function calls
 			if (functionCalled.startsWith('insertRow')) {
@@ -146,6 +136,39 @@ export const POST: RequestHandler = async ({ request }) => {
 
 				assistantMessage += `\nRow inserted into ${kbName} knowledge base.`;
 			}
+
+			// Handle getRows function calls
+			if (functionCalled.startsWith('getRows')) {
+				const kbName: string = functionCalled.replace('getRows', '');
+				const filter: RowData = JSON.parse(toolCall.function.arguments).filter;
+
+				const rowsCollection: Collection<RowData & { knowledgeBase: string; timestamp: Date }> =
+					db.collection('rows');
+				functionResult = await rowsCollection.find({ knowledgeBase: kbName, ...filter }).toArray();
+
+				shouldMakeSecondCall = true;
+			}
+		} else {
+			assistantMessage = assistantResponse.content || '';
+		}
+
+		// Make a second AI call if necessary
+		if (shouldMakeSecondCall) {
+			const secondCallMessages = [
+				...messages,
+				{
+					role: 'function',
+					name: functionCalled,
+					content: JSON.stringify(functionResult)
+				}
+			];
+
+			const secondCompletion = await openai.chat.completions.create({
+				model: 'gpt-4o-mini',
+				messages: secondCallMessages
+			});
+
+			assistantMessage = secondCompletion.choices[0].message.content || '';
 		}
 
 		// Insert the assistant's response as a trace
@@ -153,7 +176,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			timestamp: new Date(),
 			message: assistantMessage,
 			isUser: false,
-			functionCalled: functionCalled,
+			functionCalled,
 			chatId: chatId
 		});
 
