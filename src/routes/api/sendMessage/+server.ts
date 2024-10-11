@@ -7,7 +7,7 @@ import type { MongoClient, Db, Collection } from 'mongodb';
 
 interface KnowledgeBase {
 	name: string;
-	fields: { name: string; description: string; required: boolean }[];
+	fields: { name: string; description: string }[];
 }
 
 interface Trace {
@@ -41,15 +41,15 @@ export const POST: RequestHandler = async ({ request }) => {
 					(acc, field) => {
 						acc[field.name] = {
 							type: 'string',
-							description: field.description
+							description: `${field.name}: ${field.description}`
 						};
 						return acc;
 					},
 					{} as { [key: string]: { type: string; description: string } }
 				);
 
-			// Create a list of required fields
-			const requiredFields = kb.fields.filter((field) => field.required).map((field) => field.name);
+			// Set all fields as required
+			const requiredFields = kb.fields.map((field) => field.name);
 
 			return [
 				{
@@ -57,9 +57,11 @@ export const POST: RequestHandler = async ({ request }) => {
 					function: {
 						name: `insertRow${kb.name}`,
 						description: `Insert a new row into the ${kb.name} knowledge base`,
+						strict: true,
 						parameters: {
 							type: 'object',
 							properties: insertProperties,
+							additionalProperties: false,
 							required: requiredFields
 						}
 					}
@@ -114,7 +116,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// First AI call
 		const completion = await openai.chat.completions.create({
-			model: 'gpt-4o-mini',
+			model: 'gpt-4o',
 			messages: messages,
 			...(tools.length > 0 ? { tools, tool_choice: 'auto' } : {})
 		});
@@ -124,6 +126,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (assistantResponse.tool_calls && assistantResponse.tool_calls.length > 0) {
 			const toolCall = assistantResponse.tool_calls[0];
 			functionCalled = toolCall.function.name;
+
+			console.log('functionCalled', functionCalled);
 
 			// Handle insertRow function calls
 			if (functionCalled.startsWith('insertRow')) {

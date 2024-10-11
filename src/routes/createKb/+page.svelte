@@ -5,7 +5,6 @@
 	interface Field {
 		name: string;
 		description: string;
-		required: boolean;
 	}
 
 	interface KnowledgeBase {
@@ -17,7 +16,7 @@
 	let knowledgeBase: Writable<KnowledgeBase> = writable({
 		name: '',
 		description: '',
-		fields: [{ name: '', description: '', required: false }]
+		fields: [{ name: '', description: '' }]
 	});
 
 	// Update the submissionStatus store
@@ -73,7 +72,7 @@
 			$knowledgeBase = {
 				name: '',
 				description: '',
-				fields: [{ name: '', description: '', required: false }]
+				fields: [{ name: '', description: '' }]
 			};
 		} catch (error) {
 			console.error('Error creating knowledge base:', error);
@@ -82,21 +81,14 @@
 	}
 
 	// Add a function to handle field updates
-	function updateField(
-		index: number,
-		key: 'name' | 'description' | 'required',
-		value: string | boolean
-	) {
+	function updateField(index: number, key: 'name' | 'description', value: string) {
 		$knowledgeBase.fields[index][key] = value;
 		$knowledgeBase = $knowledgeBase;
 	}
 
 	// Add the addField function
 	function addField() {
-		$knowledgeBase.fields = [
-			...$knowledgeBase.fields,
-			{ name: '', description: '', required: false }
-		];
+		$knowledgeBase.fields = [...$knowledgeBase.fields, { name: '', description: '' }];
 	}
 
 	// Add the removeField function
@@ -155,16 +147,6 @@
 							class="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
 						/>
 						<label for={`field-description-${index}`} class="sr-only">Field description</label>
-					</div>
-					<div class="flex items-center">
-						<input
-							type="checkbox"
-							id={`field-required-${index}`}
-							checked={field.required}
-							on:change={(e) => updateField(index, 'required', e.target.checked)}
-							class="mr-2 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-						/>
-						<label for={`field-required-${index}`} class="text-sm text-blue-300">Required</label>
 					</div>
 					{#if index > 0}
 						<button
