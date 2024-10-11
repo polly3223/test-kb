@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
 import clientPromise from '$lib/server/mongo';
+import { SECRET_DB_NAME } from '$env/static/private';
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
 		const client = await clientPromise;
-		const db = client.db('ksTest'); // Replace 'ksTest' with your actual database name
+		const db = client.db(SECRET_DB_NAME);
 		const kbname = params.kbname;
 
 		const knowledgeBase = await db.collection('knowledgeBases').findOne({ name: kbname });

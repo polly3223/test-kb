@@ -1,12 +1,13 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import clientPromise from '$lib/server/mongo';
+import { SECRET_DB_NAME } from '$env/static/private';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const knowledgeBase = await request.json();
 		const client = await clientPromise;
-		const db = client.db('ksTest');
+		const db = client.db(SECRET_DB_NAME);
 		const collection = db.collection('knowledgeBases');
 
 		const result = await collection.insertOne(knowledgeBase);

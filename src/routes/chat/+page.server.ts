@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
 import clientPromise from '$lib/server/mongo';
+import { SECRET_DB_NAME } from '$env/static/private';
 
 export const load: PageServerLoad = async () => {
 	try {
 		const client = await clientPromise;
-		const db = client.db('ksTest');
+		const db = client.db(SECRET_DB_NAME);
 		const collection = db.collection('traces');
 
 		// Fetch all traces and sort them by timestamp
