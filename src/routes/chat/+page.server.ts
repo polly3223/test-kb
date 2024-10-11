@@ -1,29 +1,28 @@
 import type { PageServerLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 import clientPromise from '$lib/server/mongo';
 import { SECRET_DB_NAME } from '$env/static/private';
+import { nanoid } from 'nanoid';
 
 export const load: PageServerLoad = async () => {
-	try {
-		const client = await clientPromise;
-		const db = client.db(SECRET_DB_NAME);
-		const collection = db.collection('traces');
+	const client = await clientPromise;
+	const db = client.db(SECRET_DB_NAME);
+	const collection = db.collection('chats');
 
-		// Fetch all traces and sort them by timestamp
-		const traces = await collection.find().sort({ timestamp: 1 }).toArray();
+	// Check if any chats exist
+	const existingChat = await collection.findOne({});
 
-		// Convert traces to the format expected by the frontend
-		const messages = traces.map((trace) => ({
-			text: trace.message,
-			isUser: trace.isUser
-		}));
+	if (existingChat) {
+		// If a chat exists, redirect to that chat
+		throw redirect(302, `/chat/${existingChat.id}`);
+	} else {
+		// If no chats exist, create a new one
+		const chatId = nanoid(10);
+		const newChat = { id: chatId, createdAt: new Date() };
 
-		return {
-			messages
-		};
-	} catch (error) {
-		console.error('Error loading messages:', error);
-		return {
-			messages: []
-		};
+		await collection.insertOne(newChat);
+
+		// Redirect to the newly created chat
+		throw redirect(302, `/chat/${chatId}`);
 	}
 };

@@ -55,7 +55,6 @@
 			}
 
 			const result = await response.json();
-			console.log('Knowledge Base created:', result);
 			$submissionStatus = 'Knowledge Base created successfully!';
 
 			// Reset the form
