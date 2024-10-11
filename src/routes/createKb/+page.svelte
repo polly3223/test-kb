@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { writable, type Writable } from 'svelte/store';
+	import * as changeCase from 'change-case';
 
 	interface Field {
 		name: string;
@@ -35,12 +36,17 @@
 
 		try {
 			$submissionStatus = 'Submitting...';
+			const submissionData = {
+				...$knowledgeBase,
+				name: changeCase.pascalCase($knowledgeBase.name)
+			};
+
 			const response = await fetch('/api/createKnowledgeBase', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify($knowledgeBase)
+				body: JSON.stringify(submissionData)
 			});
 
 			if (!response.ok) {
