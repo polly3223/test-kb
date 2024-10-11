@@ -6,21 +6,23 @@
 	<title>AI-Powered Knowledge Base Management</title>
 </svelte:head>
 
-<!-- Hero Section -->
-<div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-	<div class="max-w-4xl mx-auto px-4 text-center">
-		<h1 class="text-5xl font-bold mb-4">Effortless Knowledge Management with AI</h1>
-		<p class="text-xl mb-8">Organize, retrieve, and interact with your data seamlessly</p>
-		<a
-			href="/createKb"
-			class="inline-block px-8 py-4 bg-white text-blue-600 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-colors duration-200 text-lg font-semibold"
-		>
-			Get Started
-		</a>
+<div class="max-w-7xl mx-auto px-4 py-16">
+	<!-- Hero Section -->
+	<div
+		class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl mb-16 overflow-hidden shadow-xl"
+	>
+		<div class="max-w-4xl mx-auto px-4 py-20 text-center">
+			<h1 class="text-5xl font-bold mb-4">AI-Powered Knowledge, Simplified</h1>
+			<p class="text-xl mb-8">Organize, retrieve, and interact with your data seamlessly</p>
+			<a
+				href="/createKb"
+				class="inline-block px-8 py-4 bg-white text-blue-600 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition-colors duration-200 text-lg font-semibold"
+			>
+				Get Started
+			</a>
+		</div>
 	</div>
-</div>
 
-<div class="max-w-6xl mx-auto px-4 py-16">
 	<div class="space-y-16">
 		<section>
 			<h2 class="text-3xl font-semibold mb-8 text-blue-400 text-center">What We Offer</h2>
