@@ -80,7 +80,7 @@
 
 	<form on:submit|preventDefault={handleSubmit} class="space-y-6">
 		<div class="space-y-4">
-			<label for="name" class="block text-lg font-medium text-blue-300">Name</label>
+			<label for="name" class="block text-lg font-medium text-blue-300">Name *</label>
 			<input
 				type="text"
 				id="name"
@@ -110,11 +110,13 @@
 							id={`field-name-${index}`}
 							value={field.name}
 							on:input={(e) => updateField(index, 'name', e.target.value)}
-							placeholder="Field name"
+							placeholder={index === 0 ? 'Field name *' : 'Field name'}
 							required={index === 0}
 							class="w-full px-4 py-2 rounded-md bg-gray-800 border border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
 						/>
-						<label for={`field-name-${index}`} class="sr-only">Field name</label>
+						<label for={`field-name-${index}`} class="sr-only"
+							>{index === 0 ? 'Field name (required)' : 'Field name'}</label
+						>
 					</div>
 					<div class="flex-1">
 						<input
