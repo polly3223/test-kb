@@ -41,7 +41,10 @@ export const POST: RequestHandler = async ({ request }) => {
 					(acc, field) => {
 						acc[field.name] = {
 							type: 'string',
-							description: `${field.name}: ${field.description}`
+							description:
+								field.name !== field.description
+									? `${field.name}: ${field.description}`
+									: field.description
 						};
 						return acc;
 					},
