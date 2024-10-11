@@ -1,5 +1,30 @@
 <script lang="ts">
 	// Remove the import and navigateToCreateKB function
+
+	const useCases = [
+		{
+			icon: '👥',
+			title: 'Personal CRM',
+			description: 'Create a personal Customer Relationship Management system with minimal effort.'
+		},
+		{
+			icon: '📱',
+			title: 'Data Collection Apps',
+			description:
+				'Build apps for collecting and managing receipts, car information, or market analysis data.'
+		},
+		{
+			icon: '📄',
+			title: 'Resume Management',
+			description:
+				'Automatically organize resumes and candidate information for efficient hiring processes.'
+		},
+		{
+			icon: '📞',
+			title: 'Contact Management',
+			description: 'Manage and query personal or professional contacts with ease.'
+		}
+	];
 </script>
 
 <svelte:head>
@@ -70,29 +95,17 @@
 
 		<section>
 			<h2 class="text-3xl font-semibold mb-8 text-blue-400 text-center">Use Cases</h2>
-			<ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
-				<li class="flex items-center">
-					<span class="text-blue-400 mr-2">•</span> Automatically organize resumes and candidate information
-				</li>
-				<li class="flex items-center">
-					<span class="text-blue-400 mr-2">•</span> Create a personal CRM system with minimal effort
-				</li>
-				<li class="flex items-center">
-					<span class="text-blue-400 mr-2">•</span> Organize and retrieve scattered information from
-					various sources
-				</li>
-				<li class="flex items-center">
-					<span class="text-blue-400 mr-2">•</span> Build data collection apps for receipts, car information,
-					or market analysis
-				</li>
-				<li class="flex items-center">
-					<span class="text-blue-400 mr-2">•</span> Manage and query personal or professional contacts
-				</li>
-				<li class="flex items-center">
-					<span class="text-blue-400 mr-2">•</span> Effortlessly maintain to-do lists, grocery lists,
-					and more
-				</li>
-			</ul>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+				{#each useCases as useCase}
+					<div class="bg-gray-800 rounded-lg p-8 shadow-lg flex flex-col h-full">
+						<div class="flex items-center mb-4">
+							<span class="text-blue-400 text-4xl mr-4">{useCase.icon}</span>
+							<h3 class="text-2xl font-semibold text-blue-300">{useCase.title}</h3>
+						</div>
+						<p class="text-gray-300 text-lg flex-grow">{useCase.description}</p>
+					</div>
+				{/each}
+			</div>
 		</section>
 
 		<section class="text-center">
