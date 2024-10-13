@@ -18,38 +18,48 @@
 
 	let pastedText = '';
 
-	onMount(() => {
-		const dropArea = document.getElementById('drop-area');
+	let dropArea: HTMLElement;
 
-		dropArea?.addEventListener('dragenter', handleDragEnter);
-		dropArea?.addEventListener('dragleave', handleDragLeave);
-		dropArea?.addEventListener('dragover', handleDragOver);
-		dropArea?.addEventListener('drop', handleDrop);
+	onMount(() => {
+		dropArea = document.getElementById('drop-area')!;
+
+		if (dropArea) {
+			dropArea.addEventListener('dragenter', handleDragEnter);
+			dropArea.addEventListener('dragleave', handleDragLeave);
+			dropArea.addEventListener('dragover', handleDragOver);
+			dropArea.addEventListener('drop', handleDrop);
+		}
 
 		return () => {
-			dropArea?.removeEventListener('dragenter', handleDragEnter);
-			dropArea?.removeEventListener('dragleave', handleDragLeave);
-			dropArea?.removeEventListener('dragover', handleDragOver);
-			dropArea?.removeEventListener('drop', handleDrop);
+			if (dropArea) {
+				dropArea.removeEventListener('dragenter', handleDragEnter);
+				dropArea.removeEventListener('dragleave', handleDragLeave);
+				dropArea.removeEventListener('dragover', handleDragOver);
+				dropArea.removeEventListener('drop', handleDrop);
+			}
 		};
 	});
 
 	function handleDragEnter(e: DragEvent) {
 		e.preventDefault();
+		e.stopPropagation();
 		dragActive = true;
 	}
 
 	function handleDragLeave(e: DragEvent) {
 		e.preventDefault();
+		e.stopPropagation();
 		dragActive = false;
 	}
 
 	function handleDragOver(e: DragEvent) {
 		e.preventDefault();
+		e.stopPropagation();
 	}
 
 	async function handleDrop(e: DragEvent) {
 		e.preventDefault();
+		e.stopPropagation();
 		dragActive = false;
 		if (e.dataTransfer?.files) {
 			await handleFiles(e.dataTransfer.files);
@@ -269,9 +279,13 @@
 				{/if}
 				<div
 					id="drop-area"
-					class="h-48 flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4"
+					class="h-48 flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4 cursor-pointer"
 					class:border-blue-500={dragActive}
 					on:click={() => fileInput.click()}
+					on:dragenter={handleDragEnter}
+					on:dragleave={handleDragLeave}
+					on:dragover={handleDragOver}
+					on:drop={handleDrop}
 				>
 					<div class="text-center">
 						<svg
