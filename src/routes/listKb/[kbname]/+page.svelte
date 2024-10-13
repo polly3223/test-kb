@@ -363,8 +363,11 @@
 					></textarea>
 					<button
 						on:click={handlePastedText}
-						class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-						disabled={processingFile}
+						class="font-bold py-2 px-4 rounded transition-colors duration-200 {pastedText.trim()
+							.length >= 10 && !processingFile
+							? 'bg-blue-500 hover:bg-blue-600 text-white'
+							: 'bg-gray-500 text-gray-300 cursor-not-allowed'}"
+						disabled={processingFile || pastedText.trim().length < 10}
 					>
 						Process Pasted Text
 					</button>
