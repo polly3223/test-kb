@@ -2,6 +2,7 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	export let data: PageData;
 
@@ -9,6 +10,95 @@
 	let formData: { [key: string]: string } = {};
 	let insertStatus: 'idle' | 'loading' | 'success' | 'error' = 'idle';
 	let errorMessage = '';
+
+	let fileInput: HTMLInputElement;
+	let dragActive = false;
+
+	let processingFile = false;
+
+	onMount(() => {
+		const dropArea = document.getElementById('drop-area');
+
+		dropArea?.addEventListener('dragenter', handleDragEnter);
+		dropArea?.addEventListener('dragleave', handleDragLeave);
+		dropArea?.addEventListener('dragover', handleDragOver);
+		dropArea?.addEventListener('drop', handleDrop);
+
+		return () => {
+			dropArea?.removeEventListener('dragenter', handleDragEnter);
+			dropArea?.removeEventListener('dragleave', handleDragLeave);
+			dropArea?.removeEventListener('dragover', handleDragOver);
+			dropArea?.removeEventListener('drop', handleDrop);
+		};
+	});
+
+	function handleDragEnter(e: DragEvent) {
+		e.preventDefault();
+		dragActive = true;
+	}
+
+	function handleDragLeave(e: DragEvent) {
+		e.preventDefault();
+		dragActive = false;
+	}
+
+	function handleDragOver(e: DragEvent) {
+		e.preventDefault();
+	}
+
+	async function handleDrop(e: DragEvent) {
+		e.preventDefault();
+		dragActive = false;
+		if (e.dataTransfer?.files) {
+			await handleFiles(e.dataTransfer.files);
+		}
+	}
+
+	async function handleFileInput() {
+		if (fileInput?.files) {
+			await handleFiles(fileInput.files);
+		}
+	}
+
+	async function handleFiles(files: FileList) {
+		const file = files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = async (e) => {
+				const fileContent = e.target?.result as string;
+				await processFile(fileContent);
+			};
+			reader.readAsText(file);
+		}
+	}
+
+	async function processFile(fileContent: string) {
+		processingFile = true;
+		try {
+			const response = await fetch('/api/fileToRow', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					fileContent,
+					knowledgeBaseName: data.knowledgeBase.name
+				})
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				formData = { ...formData, ...result.data };
+			} else {
+				throw new Error(result.error || 'Failed to process file');
+			}
+		} catch (error) {
+			errorMessage = error.message || 'An error occurred while processing the file';
+		} finally {
+			processingFile = false;
+		}
+	}
 
 	function openInsertModal() {
 		showInsertModal = true;
@@ -161,8 +251,19 @@
 			<!-- Left column: Drag and drop area -->
 			<div class="w-1/2">
 				<div
-					class="h-full flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-8"
+					id="drop-area"
+					class="h-full flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-8 relative"
+					class:border-blue-500={dragActive}
+					on:click={() => fileInput.click()}
 				>
+					{#if processingFile}
+						<div
+							class="absolute inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center"
+						>
+							<div class="spinner"></div>
+							<p class="ml-2 text-white">Processing file...</p>
+						</div>
+					{/if}
 					<div class="text-center">
 						<svg
 							class="mx-auto h-16 w-16 text-gray-400"
@@ -180,11 +281,16 @@
 						<p class="mt-4 text-lg text-gray-300">
 							Drag and drop your file here, or click to select
 						</p>
-						<p class="mt-2 text-sm text-gray-400">
-							Supported file types will be processed automatically
-						</p>
+						<p class="mt-2 text-sm text-gray-400">Supported file types: .txt</p>
 					</div>
 				</div>
+				<input
+					type="file"
+					accept=".txt"
+					style="display: none;"
+					bind:this={fileInput}
+					on:change={handleFileInput}
+				/>
 			</div>
 
 			<!-- Right column: Current form -->
@@ -232,3 +338,23 @@
 		</div>
 	</Modal>
 {/if}
+
+<style>
+	.spinner {
+		border: 4px solid rgba(255, 255, 255, 0.3);
+		border-radius: 50%;
+		border-top: 4px solid #ffffff;
+		width: 40px;
+		height: 40px;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+</style>

@@ -1,0 +1,86 @@
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import clientPromise from '$lib/server/mongo';
+import { SECRET_OPENAI_API_KEY, SECRET_DB_NAME } from '$env/static/private';
+import OpenAI from 'openai';
+import type { MongoClient, Db, Collection } from 'mongodb';
+
+interface KnowledgeBase {
+	name: string;
+	fields: { name: string; description: string }[];
+}
+
+export const POST: RequestHandler = async ({ request }) => {
+	try {
+		const { fileContent, knowledgeBaseName } = await request.json();
+		const client: MongoClient = await clientPromise;
+		const db: Db = client.db(SECRET_DB_NAME);
+
+		// Fetch the specific knowledge base
+		const kbCollection: Collection<KnowledgeBase> = db.collection('knowledgeBases');
+		const knowledgeBase = await kbCollection.findOne({ name: knowledgeBaseName });
+
+		if (!knowledgeBase) {
+			return json({ success: false, error: 'Knowledge base not found' }, { status: 404 });
+		}
+
+		// Create the tool for extracting information
+		const extractTool = {
+			type: 'function',
+			function: {
+				name: `extractInfo${knowledgeBase.name}`,
+				description: `Extract information for the ${knowledgeBase.name} knowledge base`,
+				parameters: {
+					type: 'object',
+					properties: knowledgeBase.fields.reduce(
+						(acc, field) => {
+							acc[field.name] = {
+								type: 'string',
+								description: field.description
+							};
+							return acc;
+						},
+						{} as { [key: string]: { type: 'string'; description: string } }
+					),
+					additionalProperties: false
+				}
+			}
+		};
+
+		// Initialize OpenAI API
+		const openai: OpenAI = new OpenAI({
+			apiKey: SECRET_OPENAI_API_KEY
+		});
+
+		// Call OpenAI API
+		const completion = await openai.chat.completions.create({
+			model: 'gpt-4',
+			messages: [
+				{
+					role: 'system',
+					content: 'You are an AI assistant that extracts information from text files.'
+				},
+				{
+					role: 'user',
+					content: `Extract information for the ${knowledgeBase.name} knowledge base from the following text:\n\n${fileContent}`
+				}
+			],
+			tools: [extractTool],
+			tool_choice: 'auto'
+		});
+
+		const assistantResponse = completion.choices[0].message;
+
+		if (assistantResponse.tool_calls && assistantResponse.tool_calls.length > 0) {
+			const toolCall = assistantResponse.tool_calls[0];
+			const extractedData = JSON.parse(toolCall.function.arguments);
+
+			return json({ success: true, data: extractedData }, { status: 200 });
+		} else {
+			return json({ success: false, error: 'Failed to extract information' }, { status: 500 });
+		}
+	} catch (error) {
+		console.error('Error processing file:', error);
+		return json({ success: false, error: 'Failed to process file' }, { status: 500 });
+	}
+};
