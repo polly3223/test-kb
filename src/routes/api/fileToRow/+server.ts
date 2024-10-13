@@ -12,7 +12,19 @@ interface KnowledgeBase {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { fileContent, knowledgeBaseName } = await request.json();
+		const formData = await request.formData();
+		const knowledgeBaseName = formData.get('knowledgeBaseName') as string;
+		let fileContent: string;
+
+		if (formData.has('file')) {
+			const file = formData.get('file') as File;
+			fileContent = await file.text();
+		} else if (formData.has('pastedText')) {
+			fileContent = formData.get('pastedText') as string;
+		} else {
+			return json({ success: false, error: 'No file or text provided' }, { status: 400 });
+		}
+
 		const client: MongoClient = await clientPromise;
 		const db: Db = client.db(SECRET_DB_NAME);
 

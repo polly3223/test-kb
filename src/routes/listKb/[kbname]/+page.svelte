@@ -75,12 +75,7 @@
 	async function handleFiles(files: FileList) {
 		const file = files[0];
 		if (file) {
-			const reader = new FileReader();
-			reader.onload = async (e) => {
-				const fileContent = e.target?.result as string;
-				await processFile(fileContent);
-			};
-			reader.readAsText(file);
+			await processFile(file);
 		}
 	}
 
@@ -91,29 +86,34 @@
 		}
 	}
 
-	async function processFile(content: string) {
+	async function processFile(content: File | string) {
 		processingFile = true;
 		try {
+			const formDataToSend = new FormData(); // Renamed from formData to formDataToSend
+			formDataToSend.append('knowledgeBaseName', data.knowledgeBase.name);
+
+			if (typeof content === 'string') {
+				formDataToSend.append('pastedText', content);
+			} else {
+				formDataToSend.append('file', content);
+			}
+
 			const response = await fetch('/api/fileToRow', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					fileContent: content,
-					knowledgeBaseName: data.knowledgeBase.name
-				})
+				body: formDataToSend
 			});
 
 			const result = await response.json();
 
 			if (result.success) {
-				formData = { ...formData, ...result.data };
+				// Update formData using the spread operator
+				formData = { ...result.data };
 			} else {
 				throw new Error(result.error || 'Failed to process file');
 			}
 		} catch (error) {
 			errorMessage = error.message || 'An error occurred while processing the file';
+			formData = {};
 		} finally {
 			processingFile = false;
 		}
