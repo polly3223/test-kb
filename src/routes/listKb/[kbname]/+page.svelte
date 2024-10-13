@@ -16,6 +16,8 @@
 
 	let processingFile = false;
 
+	let pastedText = '';
+
 	onMount(() => {
 		const dropArea = document.getElementById('drop-area');
 
@@ -72,7 +74,14 @@
 		}
 	}
 
-	async function processFile(fileContent: string) {
+	async function handlePastedText() {
+		if (pastedText.trim()) {
+			await processFile(pastedText);
+			pastedText = '';
+		}
+	}
+
+	async function processFile(content: string) {
 		processingFile = true;
 		try {
 			const response = await fetch('/api/fileToRow', {
@@ -81,7 +90,7 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					fileContent,
+					fileContent: content,
 					knowledgeBaseName: data.knowledgeBase.name
 				})
 			});
@@ -248,11 +257,11 @@
 	<Modal on:close={closeInsertModal} class="w-11/12 max-w-6xl">
 		<h2 slot="header" class="text-2xl font-semibold mb-4">Insert Row</h2>
 		<div slot="content" class="flex space-x-8">
-			<!-- Left column: Drag and drop area -->
-			<div class="w-1/2">
+			<!-- Left column: Drag and drop area and Text input -->
+			<div class="w-1/2 space-y-6">
 				<div
 					id="drop-area"
-					class="h-full flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-8 relative"
+					class="h-48 flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4 relative"
 					class:border-blue-500={dragActive}
 					on:click={() => fileInput.click()}
 				>
@@ -291,6 +300,32 @@
 					bind:this={fileInput}
 					on:change={handleFileInput}
 				/>
+
+				<div class="space-y-2">
+					<label for="pastedText" class="block text-sm font-medium text-gray-300">
+						Or paste your text here:
+					</label>
+					<textarea
+						id="pastedText"
+						bind:value={pastedText}
+						class="w-full h-48 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+						placeholder="Paste your text here..."
+					></textarea>
+					<button
+						on:click={handlePastedText}
+						class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+						disabled={processingFile}
+					>
+						Process Pasted Text
+					</button>
+				</div>
+
+				{#if processingFile}
+					<div class="text-center">
+						<div class="spinner inline-block mr-2"></div>
+						<span class="text-white">Processing...</span>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Right column: Current form -->
