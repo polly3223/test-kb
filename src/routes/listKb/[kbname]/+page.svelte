@@ -93,7 +93,7 @@
 	async function processFile(content: File | string) {
 		processingFile = true;
 		try {
-			const formDataToSend = new FormData(); // Renamed from formData to formDataToSend
+			const formDataToSend = new FormData();
 			formDataToSend.append('knowledgeBaseName', data.knowledgeBase.name);
 
 			if (typeof content === 'string') {
@@ -107,15 +107,20 @@
 				body: formDataToSend
 			});
 
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+			}
+
 			const result = await response.json();
 
 			if (result.success) {
-				// Update formData using the spread operator
 				formData = { ...result.data };
 			} else {
 				throw new Error(result.error || 'Failed to process file');
 			}
 		} catch (error) {
+			console.error('Error processing file:', error);
 			errorMessage = error.message || 'An error occurred while processing the file';
 			formData = {};
 		} finally {
