@@ -23,7 +23,7 @@
 	on:click|self={closeModal}
 >
 	<div
-		class="bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+		class="bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto"
 		on:click|stopPropagation
 	>
 		<div class="p-6">

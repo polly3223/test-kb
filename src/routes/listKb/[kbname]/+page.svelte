@@ -155,48 +155,80 @@
 
 <!-- Insert Row Modal -->
 {#if showInsertModal}
-	<Modal on:close={closeInsertModal}>
+	<Modal on:close={closeInsertModal} class="w-11/12 max-w-6xl">
 		<h2 slot="header" class="text-2xl font-semibold mb-4">Insert Row</h2>
-		<div slot="content">
-			<form on:submit={handleInsert}>
-				{#each data.knowledgeBase.fields as field}
-					<div class="mb-4">
-						<label for={field.name} class="block text-sm font-medium text-gray-300 mb-2">
-							{field.name}
-						</label>
-						<input
-							type="text"
-							id={field.name}
-							name={field.name}
-							bind:value={formData[field.name]}
-							class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-							required
-						/>
+		<div slot="content" class="flex space-x-8">
+			<!-- Left column: Drag and drop area -->
+			<div class="w-1/2">
+				<div
+					class="h-full flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-8"
+				>
+					<div class="text-center">
+						<svg
+							class="mx-auto h-16 w-16 text-gray-400"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+							/>
+						</svg>
+						<p class="mt-4 text-lg text-gray-300">
+							Drag and drop your file here, or click to select
+						</p>
+						<p class="mt-2 text-sm text-gray-400">
+							Supported file types will be processed automatically
+						</p>
 					</div>
-				{/each}
-				<div class="flex justify-end mt-6">
-					<button
-						type="submit"
-						class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2"
-						disabled={insertStatus === 'loading'}
-					>
-						{insertStatus === 'loading' ? 'Inserting...' : 'Insert'}
-					</button>
-					<button
-						type="button"
-						on:click={closeInsertModal}
-						class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
-						disabled={insertStatus === 'loading'}
-					>
-						Cancel
-					</button>
 				</div>
-			</form>
-			{#if insertStatus === 'success'}
-				<p class="mt-4 text-green-400">Row inserted successfully! Refreshing...</p>
-			{:else if insertStatus === 'error'}
-				<p class="mt-4 text-red-400">{errorMessage}</p>
-			{/if}
+			</div>
+
+			<!-- Right column: Current form -->
+			<div class="w-1/2">
+				<form on:submit={handleInsert} class="space-y-6">
+					{#each data.knowledgeBase.fields as field}
+						<div>
+							<label for={field.name} class="block text-sm font-medium text-gray-300 mb-2">
+								{field.name}
+							</label>
+							<input
+								type="text"
+								id={field.name}
+								name={field.name}
+								bind:value={formData[field.name]}
+								class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+								required
+							/>
+						</div>
+					{/each}
+					<div class="flex justify-end pt-4">
+						<button
+							type="submit"
+							class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded mr-4"
+							disabled={insertStatus === 'loading'}
+						>
+							{insertStatus === 'loading' ? 'Inserting...' : 'Insert'}
+						</button>
+						<button
+							type="button"
+							on:click={closeInsertModal}
+							class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded"
+							disabled={insertStatus === 'loading'}
+						>
+							Cancel
+						</button>
+					</div>
+				</form>
+				{#if insertStatus === 'success'}
+					<p class="mt-4 text-green-400">Row inserted successfully! Refreshing...</p>
+				{:else if insertStatus === 'error'}
+					<p class="mt-4 text-red-400">{errorMessage}</p>
+				{/if}
+			</div>
 		</div>
 	</Modal>
 {/if}
