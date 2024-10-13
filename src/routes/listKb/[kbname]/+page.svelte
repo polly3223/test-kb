@@ -75,7 +75,11 @@
 	async function handleFiles(files: FileList) {
 		const file = files[0];
 		if (file) {
-			await processFile(file);
+			if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+				await processPdfFile(file);
+			} else {
+				await processFile(file);
+			}
 		}
 	}
 
@@ -113,6 +117,33 @@
 			}
 		} catch (error) {
 			errorMessage = error.message || 'An error occurred while processing the file';
+			formData = {};
+		} finally {
+			processingFile = false;
+		}
+	}
+
+	async function processPdfFile(file: File) {
+		processingFile = true;
+		try {
+			const formDataToSend = new FormData();
+			formDataToSend.append('knowledgeBaseName', data.knowledgeBase.name);
+			formDataToSend.append('file', file);
+
+			const response = await fetch('/api/fileToRow', {
+				method: 'POST',
+				body: formDataToSend
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				formData = { ...result.data };
+			} else {
+				throw new Error(result.error || 'Failed to process PDF file');
+			}
+		} catch (error) {
+			errorMessage = error.message || 'An error occurred while processing the PDF file';
 			formData = {};
 		} finally {
 			processingFile = false;
@@ -304,12 +335,12 @@
 						<p class="mt-4 text-lg text-gray-300">
 							Drag and drop your file here, or click to select
 						</p>
-						<p class="mt-2 text-sm text-gray-400">Supported file types: .txt</p>
+						<p class="mt-2 text-sm text-gray-400">Supported file types: .txt, .pdf</p>
 					</div>
 				</div>
 				<input
 					type="file"
-					accept=".txt"
+					accept=".txt,.pdf"
 					style="display: none;"
 					bind:this={fileInput}
 					on:change={handleFileInput}

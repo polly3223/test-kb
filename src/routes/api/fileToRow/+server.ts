@@ -4,6 +4,7 @@ import clientPromise from '$lib/server/mongo';
 import { SECRET_OPENAI_API_KEY, SECRET_DB_NAME } from '$env/static/private';
 import OpenAI from 'openai';
 import type { MongoClient, Db, Collection } from 'mongodb';
+import pdf from 'pdf-extraction';
 
 interface KnowledgeBase {
 	name: string;
@@ -18,7 +19,14 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		if (formData.has('file')) {
 			const file = formData.get('file') as File;
-			fileContent = await file.text();
+			if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+				const arrayBuffer = await file.arrayBuffer();
+				const uint8Array = new Uint8Array(arrayBuffer);
+				const data = await pdf(uint8Array);
+				fileContent = data.text;
+			} else {
+				fileContent = await file.text();
+			}
 		} else if (formData.has('pastedText')) {
 			fileContent = formData.get('pastedText') as string;
 		} else {
