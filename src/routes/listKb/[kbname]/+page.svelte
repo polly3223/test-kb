@@ -258,21 +258,21 @@
 		<h2 slot="header" class="text-2xl font-semibold mb-4">Insert Row</h2>
 		<div slot="content" class="flex space-x-8">
 			<!-- Left column: Drag and drop area and Text input -->
-			<div class="w-1/2 space-y-6">
+			<div class="w-1/2 space-y-6 relative">
+				{#if processingFile}
+					<div
+						class="absolute inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-10"
+					>
+						<div class="spinner"></div>
+						<p class="ml-2 text-white">Processing...</p>
+					</div>
+				{/if}
 				<div
 					id="drop-area"
-					class="h-48 flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4 relative"
+					class="h-48 flex items-center justify-center border-2 border-dashed border-gray-600 rounded-lg p-4"
 					class:border-blue-500={dragActive}
 					on:click={() => fileInput.click()}
 				>
-					{#if processingFile}
-						<div
-							class="absolute inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center"
-						>
-							<div class="spinner"></div>
-							<p class="ml-2 text-white">Processing file...</p>
-						</div>
-					{/if}
 					<div class="text-center">
 						<svg
 							class="mx-auto h-16 w-16 text-gray-400"
@@ -319,13 +319,6 @@
 						Process Pasted Text
 					</button>
 				</div>
-
-				{#if processingFile}
-					<div class="text-center">
-						<div class="spinner inline-block mr-2"></div>
-						<span class="text-white">Processing...</span>
-					</div>
-				{/if}
 			</div>
 
 			<!-- Right column: Current form -->
@@ -379,8 +372,8 @@
 		border: 4px solid rgba(255, 255, 255, 0.3);
 		border-radius: 50%;
 		border-top: 4px solid #ffffff;
-		width: 40px;
-		height: 40px;
+		width: 60px;
+		height: 60px;
 		animation: spin 1s linear infinite;
 	}
 
