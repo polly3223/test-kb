@@ -17,6 +17,7 @@
 		"@tailwindcss/typography": "^0.5.15",
 		"autoprefixer": "^10.4.20",
 		"change-case": "^5.4.4",
+		"composio-core": "^0.1.1-8.5",
 		"markdown-it": "^14.1.0",
 		"mongodb": "^6.9.0",
 		"nanoid": "^5.0.7",
